@@ -57,6 +57,7 @@ class AgentState:
         self.next_rotation = 0
         self.prev_rotation = 0
         self.holding = None
+        self.done = False
 
     def xy2rc(self, x, y):
         "convert x y to row col"
@@ -72,6 +73,7 @@ class AgentState:
         self.goal_reached = False
         self.holding = None
         self.next_rotation = self.initial_rotation.z
+        self.done = False
 
     def update(self, agent):
         """
@@ -242,6 +244,7 @@ class TowerEnvironment(Environment):
         state.height = z
         state.mass = mass
         getSimContext().setObjectPosition(state.obj,Vector3f((1 + x) * GRID_DX, (1 + y) * GRID_DY, (1 + z) * GRID_DZ))
+        getSimContext().setObjectPosition(state.obj,Vector3f((1 + x) * GRID_DX, (1 + y) * GRID_DY, (1 + z) * GRID_DZ))
 
     def remove_block(self, name):
         block = self.get_block_state(name)
@@ -277,10 +280,11 @@ class TowerEnvironment(Environment):
         print "RESET"
         state = self.get_state(agent)
         state.reset()
-
+        self.set_animation(agent,state,'stand')
         self.initialize_blocks()
         agent.state.position = copy(state.initial_position)
         agent.state.rotation = Vector3f(0,0,0)#copy(state.initial_rotation)
+        agent.state.update_immediately()
         agent.reset()
         return True
 
@@ -468,7 +472,12 @@ class TowerEnvironment(Environment):
         return obs
 
     def is_episode_over(self, agent):
-         return False
+        state = self.get_state(agent)
+        if state.done:
+            state.done = False
+            return True
+        else:
+            return False
 
     def cleanup(self):
           pass

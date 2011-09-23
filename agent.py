@@ -92,6 +92,8 @@ class TowerAgent(AgentBrain):
                     locations['Agent'] = locations[dest]
                 #from show_strips import show_solution
                 #show_solution(solution)
+        else:
+            print 'Already solved!'
         if self.action_queue:
             return self.action_queue.pop(0)
         else:
