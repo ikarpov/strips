@@ -17,38 +17,22 @@ def CreateGui(guiMan):
     guiMan.setTransparency(1.0)
     guiMan.setFont("data/gui/fonthaettenschweiler.bmp")
 
-    towerButton3 = gui.create_button(guiMan, 'tower3', Pos2i(0,0), Pos2i(150,30), '')
-    towerButton3.text = '3 Layer Towers of Hanoi'
-    towerButton3.OnMouseLeftClick = lambda: getMod().start_tower(3)
+    towerButton3 = gui.create_button(guiMan, 'tower1', Pos2i(0,0), Pos2i(150,30), '')
+    towerButton3.text = '1 Layer Towers of Hanoi'
+    towerButton3.OnMouseLeftClick = lambda: getMod().start_tower(1)
 
-    towerButton4 = gui.create_button(guiMan, 'tower4', Pos2i(0,30), Pos2i(150,30), '')
-    towerButton4.text = '4 Layer Towers of Hanoi'
-    towerButton4.OnMouseLeftClick = lambda: getMod().start_tower(4)
+    towerButton4 = gui.create_button(guiMan, 'tower2', Pos2i(0,30), Pos2i(150,30), '')
+    towerButton4.text = '2 Layer Towers of Hanoi'
+    towerButton4.OnMouseLeftClick = lambda: getMod().start_tower(2)
 
-    towerButton5 = gui.create_button(guiMan, 'tower5', Pos2i(0,60), Pos2i(150,30), '')
-    towerButton5.text = '5 Layer Towers of Hanoi'
-    towerButton5.OnMouseLeftClick = lambda: getMod().start_tower(5)
+    towerButton5 = gui.create_button(guiMan, 'tower3', Pos2i(0,60), Pos2i(150,30), '')
+    towerButton5.text = '3 Layer Towers of Hanoi'
+    towerButton5.OnMouseLeftClick = lambda: getMod().start_tower(3)
 
     agentWindow = gui.create_window(guiMan, 'agentWindow', Pos2i(20, 20), Pos2i(150, 120), 'Agent')
     agentWindow.addChild(towerButton3)
     agentWindow.addChild(towerButton4)
     agentWindow.addChild(towerButton5)
-
-    epsilon_percent = int(INITIAL_EPSILON * 100)
-    epsilonValue = gui.create_text(guiMan, 'epsilonEditBox', Pos2i(260,0), Pos2i(100,30), str(epsilon_percent))
-
-    epsilonLabel = gui.create_text(guiMan, 'epsilonLabel', Pos2i(10,0), Pos2i(100,30), 'Exploit-Explore:')
-
-    # this can be used to adjust the exploration-exploitation tradeoff (fraction of
-    # champion organisms in the case of rt-NEAT and fraction of greedy actions in the case
-    # of the epsilon-greedy RL methods like Sarsa and Q-learning)
-    epsilonScroll = gui.create_scroll_bar(guiMan, 'epsilonScroll', Pos2i(100,0), Pos2i(150,20), True)
-    epsilonScroll.setMax(100)
-    epsilonScroll.setLargeStep(10)
-    epsilonScroll.setSmallStep(1)
-    epsilonScroll.setPos(epsilon_percent)
-    getMod().set_epsilon(INITIAL_EPSILON)
-    epsilonScroll.OnScrollBarChange = epsilon_adjusted(epsilonScroll, epsilonValue)
 
     speedupValue = gui.create_text(guiMan, 'speedupEditBox', Pos2i(260, 30), Pos2i(100, 30), str(0))
 
@@ -63,21 +47,9 @@ def CreateGui(guiMan):
     speedupScroll.OnScrollBarChange = speedup_adjusted(speedupScroll, speedupValue)
 
     paramWindow = gui.create_window(guiMan, 'paramWindow', Pos2i(20, 500), Pos2i(300,100), 'Parameters')
-    paramWindow.addChild(epsilonLabel)
-    paramWindow.addChild(epsilonScroll)
-    paramWindow.addChild(epsilonValue)
     paramWindow.addChild(speedupLabel)
     paramWindow.addChild(speedupScroll)
     paramWindow.addChild(speedupValue)
-
-def epsilon_adjusted(scroll, value):
-    # generate a closure that will be called whenever the epsilon slider is adjusted
-    value.text = str(scroll.getPos())
-    getMod().set_epsilon(float(scroll.getPos())/100)
-    def closure():
-        value.text = str(scroll.getPos())
-        getMod().set_epsilon(float(scroll.getPos())/100)
-    return closure
 
 def speedup_adjusted(scroll, value):
     # generate a closure that will be called whenever the speedup slider is adjusted
@@ -97,9 +69,6 @@ def recenter(cam):
 def ClientMain():
     # create fog effect
     getSimContext().setFog()
-
-    # don't show physics
-    # disable_physics()
 
     # add a camera
     camRotateSpeed = 100

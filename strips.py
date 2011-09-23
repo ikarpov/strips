@@ -240,9 +240,6 @@ def solve_helper(world, subgoals, preconds, plan, max_depth):
 
             # if the candidate did not work, remove it and try the next guy
             plan.pop()
-        
-
-
 
 # Gets all grounded actions which have a post condition that includes the goal
 def get_possible_grounds(world, goal):

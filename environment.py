@@ -113,12 +113,27 @@ class TowerEnvironment(Environment):
         reward_info.add_continuous(-100,100)
         self.agent_info = AgentInitInfo(observation_info, action_info, reward_info)
         self.max_steps = MAX_STEPS
+        
+    def set_num_towers(self, n):
+        self.num_towers = n
+        from strips import create_world
+        if self.num_towers == 1:
+            self.world = create_world(findResource('worlds/towers1_strips.txt'))
+            self.locations = { 'Disk1': 'Pole1', 'Pole1': 'Pole1', \
+                'Pole2': 'Pole2', 'Pole3': 'Pole3', 'Agent': 'Pole1' }
+        elif self.num_towers == 2:
+            self.world = create_world(findResource('worlds/towers2_strips.txt'))
+            self.locations = { 'Disk1': 'Pole1', 'Disk2': 'Pole1', \
+                'Pole1': 'Pole1', 'Pole2': 'Pole2', 'Pole3': 'Pole3', \
+                'Agent': 'Pole1' }
+        else:
+            self.world = create_world(findResource('worlds/towers_strips.txt'))
+            self.locations = { 'Disk1': 'Pole1', 'Disk2': 'Pole1', \
+                'Disk3': 'Pole1', 'Pole1': 'Pole1', 'Pole2': 'Pole2', \
+                'Pole3': 'Pole3', 'Agent': 'Pole1' }
 
-    def initilize_blocks(self):
-        from module import getMod
-        num_towers = getMod().num_towers
-
-        if num_towers >= 1:
+    def initialize_blocks(self):
+        if self.num_towers >= 1:
             if not self.get_block_state('blue'):
                 self.add_block("data/shapes/cube/BlueCube.xml", 0, 1, 0, 5, 'blue')
             else:
@@ -126,34 +141,38 @@ class TowerEnvironment(Environment):
 
         bstate = self.get_block_state('blue')
 
-        if num_towers >= 2:
+        if self.num_towers >= 2:
             if not self.get_block_state('green'):
                 self.add_block('data/shapes/cube/GreenCube.xml', 0, 1, 1, 4, 'green')
             else:
                 self.set_block('green',0,1,1,4)
-
+        elif self.get_block_state('green'):
+            self.remove_block('green')
+            
         gstate = self.get_block_state('green')
 
-        if num_towers >= 3:
+        if self.num_towers >= 3:
             if not self.get_block_state('yellow'):
                 self.add_block('data/shapes/cube/YellowCube.xml', 0, 1, 2, 3, 'yellow')
             else:
                 self.set_block('yellow',0,1,2,3)
-
+        elif self.get_block_state('yellow'):
+            self.remove_block('yellow')
+            
         ystate = self.get_block_state('yellow')
 
-        if num_towers >=  4:
+        if self.num_towers >=  4:
             if not self.get_block_state('red'):
                 self.add_block('data/shapes/cube/RedCube.xml', 0, 1, 3, 2, 'red', scaler = (1.0/2.5))
             else:
                 self.set_block('red',0,1,3,2)
-
+                
         elif self.get_block_state('red'):
             self.remove_block('red')
 
         rstate = self.get_block_state('red')
 
-        if num_towers >=  5:
+        if self.num_towers >=  5:
             if not self.get_block_state('white'):
                 self.add_block('data/shapes/cube/BlueCube.xml', 0, 1, 4, 1, 'white')
             else:
@@ -164,14 +183,18 @@ class TowerEnvironment(Environment):
 
         wstate = self.get_block_state('white')
 
-        bstate.above = gstate
-        gstate.below = bstate
-        gstate.above = ystate
-        ystate.below = gstate
-        if num_towers > 3: ystate.above = rstate
-        if num_towers > 3: rstate.below = ystate
-        if num_towers > 4: rstate.above = wstate
-        if num_towers > 4: wstate.below = rstate
+        if self.num_towers > 1:
+            bstate.above = gstate
+            gstate.below = bstate
+        if self.num_towers > 2:
+            gstate.above = ystate
+            ystate.below = gstate
+        if self.num_towers > 3: 
+            ystate.above = rstate
+            rstate.below = ystate
+        if self.num_towers > 4:
+            rstate.above = wstate
+            wstate.below = rstate
 
         print 'Initialized TowerEnvironment'
 
@@ -231,9 +254,6 @@ class TowerEnvironment(Environment):
         else:
             self.states[agent] = AgentState()
             assert(self.states[agent].sensors)
-            if hasattr(agent, 'epsilon'):
-                print 'epsilon:', self.epsilon
-                agent.epsilon = self.epsilon
             return self.states[agent]
 
     def can_move(self, state, move):
@@ -258,13 +278,16 @@ class TowerEnvironment(Environment):
         state = self.get_state(agent)
         state.reset()
 
-        self.initilize_blocks()
+        self.initialize_blocks()
         agent.state.position = copy(state.initial_position)
         agent.state.rotation = Vector3f(0,0,0)#copy(state.initial_rotation)
         agent.reset()
         return True
 
     def get_agent_info(self, agent):
+        if len(self.block_states) == 0:
+            self.initialize_blocks()
+
         return self.agent_info
 
     def set_animation(self, agent, state, animation):
@@ -277,8 +300,6 @@ class TowerEnvironment(Environment):
         """
         actions = ["Do Nothing", "Walk Forward", "Set Down", "Pick Up", "Turn Right", "Turn Left"]
 
-        if len(self.block_states) == 0:
-            self.initilize_blocks()
         state = self.get_state(agent)
         if not self.agent_info.actions.validate(action):
             state.prev_rc = state.rc
