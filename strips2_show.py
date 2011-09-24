@@ -1,0 +1,59 @@
+from Tkinter import *
+from strips2 import *
+
+DH = 20
+X = {'Pole1': 50, 'Pole2': 150, 'Pole3': 250}
+W = {'Disk1': 50, 'Disk2': 60, 'Disk3': 70}
+C = {'Disk1': 'red', 'Disk2': 'green', 'Disk3': 'blue'}
+
+def get_height(state, disk):
+    """ get the height of the disk given the state """
+    for p in state:
+        if p[0] == 'On' and p[1] == disk:
+            return 1 + get_height(state - set([p]), p[2])
+    return 0
+
+def get_pole(state, disk):
+    """ get the pole of the disk given the state """
+    for p in state:
+        if p[0] == 'On' and p[1] == disk:
+            if p[2] in POLES:
+                return p[2]
+            else:
+                return get_pole(state - set([p]), p[2])
+    return None
+    
+class StripsStateViewer:
+    def __init__(self):
+        self.master = Tk()
+        self.master.title('Towers of Hanoi planning state')
+        self.w = Canvas(self.master, width=300, height=200)
+        self.w.pack()
+        self.w.create_rectangle(45, 50, 55, 190, fill="grey")
+        self.w.create_rectangle(145, 50, 155, 190, fill="grey")
+        self.w.create_rectangle(245, 50, 255, 190, fill="grey")
+        self.w.create_rectangle(10, 130, 290, 190, fill = "grey")
+        self.handles = {}
+        for disk in DISKS:
+            self.handles[disk] = None
+
+    def draw_state(self, state):
+        for disk in DISKS:
+            if self.handles[disk]:
+                self.w.delete(self.handles[disk])
+                self.handles[disk] = None
+            h = get_height(state, disk) * 20
+            pole = get_pole(state, disk)
+            if pole is not None:
+                x = X[pole]
+                color = C[disk]
+                width = W[disk]
+                self.handles[disk] = self.w.create_rectangle(x-width/2, 150-h, x+width/2, 130 - h, fill = color)
+
+def main():
+    viewer = StripsStateViewer()
+    viewer.draw_state(INIT)
+    mainloop()
+
+if __name__ == "__main__":
+    main()
