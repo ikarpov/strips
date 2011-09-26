@@ -1,5 +1,5 @@
 from Tkinter import *
-from strips2 import *
+from towers3 import *
 
 DH = 20
 X = {'Pole1': 50, 'Pole2': 150, 'Pole3': 250}
@@ -22,7 +22,7 @@ def get_pole(state, disk):
             else:
                 return get_pole(state - set([p]), p[2])
     return None
-    
+
 class StripsStateViewer:
     def __init__(self):
         self.master = Tk()
@@ -50,10 +50,10 @@ class StripsStateViewer:
                 width = W[disk]
                 self.handles[disk] = self.w.create_rectangle(x-width/2, 150-h, x+width/2, 130 - h, fill = color)
 
-def main():
+def show_state(state = INIT):
     viewer = StripsStateViewer()
-    viewer.draw_state(INIT)
+    viewer.draw_state(state)
     mainloop()
 
 if __name__ == "__main__":
-    main()
+    show_state()
