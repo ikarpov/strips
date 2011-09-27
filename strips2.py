@@ -1,58 +1,71 @@
 from copy import copy
-from pprint import pprint
-#from towers2 import *
 from towers3 import *
-from strips2_show import show_state
 
-def solve(start, goal, actions, depth=5, states_seen = set([frozenset(GOAL)]) ):
-    """
-    A STRIPS-like planner algorithm
+__doc__ = """This is an example planning algorithm for Towers of Hanoi"""
+__author__ = "Igor Karpov <ikarpov@cs.utexas.edu>"
+__version__ = "0.1"
 
-    Parameters:
-     - start: a set of tuples that make up the starting state
-     - goal: a set of tuples that make up the goal state
-     - actions: a list of (Do, Undo) pairs that operate on the state (currently we assume that the signature is Do(Disk, Source, Dest) -> {True, False})
+DEPTH = 7
+
+def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
     """
+    solve( start, goal, actions, depth=DEPTH )
+
+    A STRIPS-like planner
+
+    Arguments:
+
+    start -- a set of tuples that make up the starting state
+    goal -- a set of tuples that make up the goal state
+    actions -- a list of (Do, Undo) pairs that operate on the state
+        (currently we assume that the signature is
+        Do(Disk, Source, Dest) -> {True, False})
+    depth -- the maximum depth of recursion to allow the algorithm to search for a plan
+
+    Returns:
+
+    A plan of actions (represented as tuples with function followed by their arguments) which will,
+    starting at the start state, reach the goal state
+    """
+    # if the goal is a subset of the starting state
     if goal.issubset(start):
-        return [] # already solved!
-    elif depth == 0:
+        # this is already solved!
+        if show_state: show_state(start)
+        print_plan(plan)
+        return plan
+    # if we are below depth, stop
+    elif depth <= 0:
         return None
+    # otherwise we actually need to do some work
     else:
-        NEXT_STATES = []
-        # unfreeze our state
+        # we will need to modify the state so we make a copy of it
         state = set(start)
-        show_state(state)
-        # try all actions
+        if state: show_state(state)
+        # try all actions with all parameters
+        # WARNING: this could get big quickly!
         for (do, undo) in actions:
             for Disk in DISKS:
                 for Source in set(LITERALS) - set([Disk]):
                     for Dest in set(LITERALS) - set([Disk, Source]):
                         action = (do, Disk, Source, Dest)
                         if do(state, Disk, Source, Dest):
-                            if goal.issubset(state):
-                                # this is a solution!
-                                show_state(state)
-                                undo(state, Disk, Source, Dest)
-                                return [action]
+                            new_state = frozenset(state)
+                            # yield all of the states and plans encountered below us
+                            sln = solve(new_state, goal, actions, depth = depth - 1, plan = plan + [action], show_state = show_state)
+                            if sln is not None:
+                                return sln
                             else:
-                                new_state = frozenset(state)
-                                if new_state not in states_seen:
-                                    # we should try this action followed by some other actions
-                                    NEXT_STATES.append((action, new_state))
-                                    states_seen.add(new_state)
-                                # back track - action did not lead to a solution
+                                # undo the action if it didn't work (backtrack)
                                 undo(state, Disk, Source, Dest)
-        for (action, state) in NEXT_STATES:
-            sln = solve(state, goal, actions, depth - 1)
-            if sln is not None:
-                return [action] + sln
         return None
 
+def print_plan(plan):
+    for action in plan:
+        print "%s(%s)" % (action[0].__name__, ', '.join(action[1:]))
+
 if __name__ == "__main__":
-    solution = solve(INIT, GOAL, [(Move, UnMove)], depth=7)
-    if solution:
-        print 'Solution found! Here is the plan:'
-        for action in solution:
-            print "%s(%s)" % (action[0].__name__, ', '.join(action[1:]))
-    else:
-        print 'Solution not found!'
+    def planner(show_state):
+        solve(INIT, GOAL, [(Move, UnMove)], show_state=show_state)
+    from strips2_show import demo_planner
+    demo_planner(planner)
+

@@ -53,7 +53,6 @@ def Move(STATE, Disk, Source, Dest):
         STATE.remove( On(Disk, Source) )
         STATE.remove( Clear( Dest ) )
         STATE.add( Clear( Source ) )
-        print '          move', Disk, Source, Dest
         return True
     else:
         return False
@@ -66,10 +65,7 @@ def UnMove(STATE, Disk, Source, Dest):
         STATE.remove( Clear( Source ) )
         return True
     else:
-        print 'could not unmove!', Disk, Source, Dest
-        from pprint import pprint
-        pprint(STATE)
-        assert False
+        return False
 
 # actions is just a list of pairs of functions to do or undo an action
 # in general we could make things general and check for function arity

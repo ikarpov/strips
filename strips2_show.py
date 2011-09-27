@@ -1,5 +1,6 @@
 from Tkinter import *
 from towers3 import *
+import threading
 
 DH = 20
 X = {'Pole1': 50, 'Pole2': 150, 'Pole3': 250}
@@ -24,7 +25,7 @@ def get_pole(state, disk):
     return None
 
 class StripsStateViewer:
-    def __init__(self):
+    def __init__(self, lock = None):
         self.master = Tk()
         self.master.title('Towers of Hanoi planning state')
         self.w = Canvas(self.master, width=300, height=200)
@@ -36,8 +37,19 @@ class StripsStateViewer:
         self.handles = {}
         for disk in DISKS:
             self.handles[disk] = None
+        self.lock = lock
+        if self.lock:
+            self.w.after(50, self.update_state)
+
+    def update_state(self):
+        if self.lock:
+            self.w.after(50, self.update_state)
+            if self.lock.locked():
+                self.lock.release()
 
     def draw_state(self, state):
+        if self.lock:
+            self.lock.acquire()
         for disk in DISKS:
             if self.handles[disk]:
                 self.w.delete(self.handles[disk])
@@ -48,12 +60,25 @@ class StripsStateViewer:
                 x = X[pole]
                 color = C[disk]
                 width = W[disk]
-                self.handles[disk] = self.w.create_rectangle(x-width/2, 150-h, x+width/2, 130 - h, fill = color)
+                self.handles[disk] = \
+                    self.w.create_rectangle(x-width/2, 150-h, x+width/2, 130 - h, fill = color)
+
+    def run(self):
+        mainloop()
 
 def show_state(state = INIT):
     viewer = StripsStateViewer()
     viewer.draw_state(state)
     mainloop()
+
+def demo_planner(planner):
+    lock = threading.Lock()
+    viewer = StripsStateViewer(lock)
+    viewer.draw_state(INIT)
+    thread = threading.Thread(target=planner, args=[viewer.draw_state,])
+    thread.start()
+    mainloop()
+    thread.join()
 
 if __name__ == "__main__":
     show_state()
