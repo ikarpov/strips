@@ -30,7 +30,7 @@ def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
     # if the goal is a subset of the starting state
     if goal.issubset(start):
         # this is already solved!
-        if show_state: show_state(start)
+        if show_state: show_state(start, DEPTH-depth, plan)
         print_plan(plan)
         return plan
     # if we are below depth, stop
@@ -40,7 +40,7 @@ def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
     else:
         # we will need to modify the state so we make a copy of it
         state = set(start)
-        if state: show_state(state)
+        if state: show_state(state, DEPTH-depth, plan)
         # try all actions with all parameters
         # WARNING: this could get big quickly!
         for (do, undo) in actions:

@@ -2,9 +2,9 @@ from Tkinter import *
 from towers3 import *
 import threading
 
-DH = 20
-X = {'Pole1': 50, 'Pole2': 150, 'Pole3': 250}
-W = {'Disk1': 50, 'Disk2': 60, 'Disk3': 70}
+DH = 10
+X = {'Pole1': 25, 'Pole2': 75, 'Pole3': 125}
+W = {'Disk1': 25, 'Disk2': 30, 'Disk3': 35}
 C = {'Disk1': 'red', 'Disk2': 'green', 'Disk3': 'blue'}
 
 def get_height(state, disk):
@@ -28,40 +28,57 @@ class StripsStateViewer:
     def __init__(self, lock = None):
         self.master = Tk()
         self.master.title('Towers of Hanoi planning state')
-        self.w = Canvas(self.master, width=300, height=200)
-        self.w.pack()
-        self.w.create_rectangle(45, 50, 55, 190, fill="grey")
-        self.w.create_rectangle(145, 50, 155, 190, fill="grey")
-        self.w.create_rectangle(245, 50, 255, 190, fill="grey")
-        self.w.create_rectangle(10, 130, 290, 190, fill = "grey")
+        self.canvases = []
         self.handles = {}
-        for disk in DISKS:
-            self.handles[disk] = None
+        self.push_canvas()
         self.lock = lock
         if self.lock:
-            self.w.after(50, self.update_state)
+            self.master.after(100, self.update_state)
+
+    def push_canvas(self):
+        canvas = Canvas(self.master, width=150, height=100)
+        canvas.pack()
+        canvas.create_rectangle(45/2, 50/2, 55/2, 190/2, fill="grey")
+        canvas.create_rectangle(145/2, 50/2, 155/2, 190/2, fill="grey")
+        canvas.create_rectangle(245/2, 50/2, 255/2, 190/2, fill="grey")
+        canvas.create_rectangle(10/2, 130/2, 290/2, 190/2, fill = "grey")
+        for disk in DISKS:
+            self.handles[(canvas, disk)] = None
+        self.canvases.append(canvas)
+
+    def clear_canvas(self,canvas):
+        for obj in DISKS:
+            h = self.handles[(canvas, obj)]
+            if h:
+                canvas.delete(h)
+                self.handles[(canvas, h)] = None
 
     def update_state(self):
-        if self.lock:
-            self.w.after(50, self.update_state)
-            if self.lock.locked():
-                self.lock.release()
+        self.master.after(50, self.update_state)
+        if self.lock and self.lock.locked():
+            self.lock.release()
 
-    def draw_state(self, state):
+    def draw_state(self, state, depth = 0, plan = []):
         if self.lock:
             self.lock.acquire()
+        while depth > len(self.canvases) - 1:
+            self.push_canvas()
+        #print depth, len(self.canvases)
+        for i in range(depth, len(self.canvases)):
+            self.clear_canvas(self.canvases[i])
+        canvas = self.canvases[depth]
         for disk in DISKS:
-            if self.handles[disk]:
-                self.w.delete(self.handles[disk])
-                self.handles[disk] = None
-            h = get_height(state, disk) * 20
+            if self.handles[(canvas,disk)]:
+                canvas.delete(self.handles[(canvas,disk)])
+                self.handles[(canvas,disk)] = None
+            h = get_height(state, disk) * DH
             pole = get_pole(state, disk)
             if pole is not None:
                 x = X[pole]
                 color = C[disk]
                 width = W[disk]
-                self.handles[disk] = \
-                    self.w.create_rectangle(x-width/2, 150-h, x+width/2, 130 - h, fill = color)
+                self.handles[(canvas,disk)] = \
+                    canvas.create_rectangle(x-width/2, 150/2-h, x+width/2, 130/2 - h, fill = color)
 
     def run(self):
         mainloop()
