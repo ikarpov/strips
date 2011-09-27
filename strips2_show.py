@@ -37,7 +37,7 @@ class StripsStateViewer:
 
     def push_canvas(self):
         canvas = Canvas(self.master, width=150, height=100)
-        canvas.pack()
+        canvas.grid(row=0,column=len(self.canvases))
         canvas.create_rectangle(45/2, 50/2, 55/2, 190/2, fill="grey")
         canvas.create_rectangle(145/2, 50/2, 155/2, 190/2, fill="grey")
         canvas.create_rectangle(245/2, 50/2, 255/2, 190/2, fill="grey")
