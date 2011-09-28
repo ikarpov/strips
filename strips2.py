@@ -7,7 +7,7 @@ __version__ = "0.1"
 
 DEPTH = 7
 
-def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
+def solve(start, goal, actions, depth=DEPTH, plan=[], viewer = None ):
     """
     solve( start, goal, actions, depth=DEPTH )
 
@@ -30,7 +30,9 @@ def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
     # if the goal is a subset of the starting state
     if goal.issubset(start):
         # this is already solved!
-        if show_state: show_state(start, DEPTH-depth, plan)
+        if viewer:
+            viewer.show_state(start, DEPTH-depth, plan)
+            viewer.plan_found(plan)
         print_plan(plan)
         return plan
     # if we are below depth, stop
@@ -40,7 +42,8 @@ def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
     else:
         # we will need to modify the state so we make a copy of it
         state = set(start)
-        if state: show_state(state, DEPTH-depth, plan)
+        if viewer:
+            viewer.show_state(state, DEPTH-depth, plan)
         # try all actions with all parameters
         # WARNING: this could get big quickly!
         for (do, undo) in actions:
@@ -51,7 +54,7 @@ def solve(start, goal, actions, depth=DEPTH, plan=[], show_state = None ):
                         if do(state, Disk, Source, Dest):
                             new_state = frozenset(state)
                             # yield all of the states and plans encountered below us
-                            sln = solve(new_state, goal, actions, depth = depth - 1, plan = plan + [action], show_state = show_state)
+                            sln = solve(new_state, goal, actions, depth = depth - 1, plan = plan + [action], viewer=viewer)
                             if sln is not None:
                                 return sln
                             else:
@@ -64,8 +67,8 @@ def print_plan(plan):
         print "%s(%s)" % (action[0].__name__, ', '.join(action[1:]))
 
 if __name__ == "__main__":
-    def planner(show_state):
-        solve(INIT, GOAL, [(Move, UnMove)], show_state=show_state)
+    def planner(viewer):
+        solve(INIT, GOAL, [(Move, UnMove)], viewer=viewer)
     from strips2_show import demo_planner
     demo_planner(planner)
 

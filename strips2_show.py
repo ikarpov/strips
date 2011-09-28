@@ -7,23 +7,6 @@ X = {'Pole1': 25, 'Pole2': 75, 'Pole3': 125}
 W = {'Disk1': 25, 'Disk2': 30, 'Disk3': 35}
 C = {'Disk1': 'red', 'Disk2': 'green', 'Disk3': 'blue'}
 
-def get_height(state, disk):
-    """ get the height of the disk given the state """
-    for p in state:
-        if p[0] == 'On' and p[1] == disk:
-            return 1 + get_height(state - set([p]), p[2])
-    return 0
-
-def get_pole(state, disk):
-    """ get the pole of the disk given the state """
-    for p in state:
-        if p[0] == 'On' and p[1] == disk:
-            if p[2] in POLES:
-                return p[2]
-            else:
-                return get_pole(state - set([p]), p[2])
-    return None
-
 class StripsStateViewer:
     def __init__(self, lock = None):
         self.master = Tk()
@@ -31,6 +14,7 @@ class StripsStateViewer:
         self.canvases = []
         self.handles = {}
         self.push_canvas()
+        self.plan = None
         self.lock = lock
         if self.lock:
             self.master.after(100, self.update_state)
@@ -54,11 +38,17 @@ class StripsStateViewer:
                 self.handles[(canvas, h)] = None
 
     def update_state(self):
-        self.master.after(50, self.update_state)
+        if not self.plan:
+            self.master.after(50, self.update_state)
+        else:
+            self.master.after(1000, self.quit)
         if self.lock and self.lock.locked():
             self.lock.release()
 
-    def draw_state(self, state, depth = 0, plan = []):
+    def quit(self):
+        self.master.quit()
+
+    def show_state(self, state, depth = 0, plan = []):
         if self.lock:
             self.lock.acquire()
         while depth > len(self.canvases) - 1:
@@ -80,22 +70,26 @@ class StripsStateViewer:
                 self.handles[(canvas,disk)] = \
                     canvas.create_rectangle(x-width/2, 150/2-h, x+width/2, 130/2 - h, fill = color)
 
+    def plan_found(self, plan):
+        self.plan = plan
+
     def run(self):
         mainloop()
 
 def show_state(state = INIT):
     viewer = StripsStateViewer()
-    viewer.draw_state(state)
+    viewer.show_state(state)
     mainloop()
 
 def demo_planner(planner):
     lock = threading.Lock()
     viewer = StripsStateViewer(lock)
-    viewer.draw_state(INIT)
-    thread = threading.Thread(target=planner, args=[viewer.draw_state,])
+    viewer.show_state(INIT)
+    thread = threading.Thread(target=planner, args=[viewer,])
     thread.start()
     mainloop()
     thread.join()
+    return viewer.plan
 
 if __name__ == "__main__":
     show_state()
