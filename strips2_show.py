@@ -53,7 +53,6 @@ class StripsStateViewer:
             self.lock.acquire()
         while depth > len(self.canvases) - 1:
             self.push_canvas()
-        #print depth, len(self.canvases)
         for i in range(depth, len(self.canvases)):
             self.clear_canvas(self.canvases[i])
         canvas = self.canvases[depth]

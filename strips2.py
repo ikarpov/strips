@@ -33,7 +33,6 @@ def solve(start, goal, actions, depth=DEPTH, plan=[], viewer = None ):
         if viewer:
             viewer.show_state(start, DEPTH-depth, plan)
             viewer.plan_found(plan)
-        print_plan(plan)
         return plan
     # if we are below depth, stop
     elif depth <= 0:
@@ -68,7 +67,8 @@ def print_plan(plan):
 
 if __name__ == "__main__":
     def planner(viewer):
-        solve(INIT, GOAL, [(Move, UnMove)], viewer=viewer)
+        solve(INIT, GOAL, ACTIONS, viewer=viewer)
     from strips2_show import demo_planner
-    demo_planner(planner)
-
+    plan = demo_planner(planner)
+    if plan is not None:
+        print_plan(plan)
