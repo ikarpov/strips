@@ -9,6 +9,7 @@ import common.gui as gui
 
 from BlocksPlanning.module import getMod, delMod
 from BlocksPlanning.constants import *
+from BlocksPlanning.environment import TowerEnvironment
 
 #########################################################
 
@@ -17,22 +18,12 @@ def CreateGui(guiMan):
     guiMan.setTransparency(1.0)
     guiMan.setFont("data/gui/fonthaettenschweiler.bmp")
 
-    towerButton3 = gui.create_button(guiMan, 'tower1', Pos2i(0,0), Pos2i(150,30), '')
-    towerButton3.text = '1 Layer Towers of Hanoi'
-    towerButton3.OnMouseLeftClick = lambda: getMod().start_tower(1)
-
-    towerButton4 = gui.create_button(guiMan, 'tower2', Pos2i(0,30), Pos2i(150,30), '')
-    towerButton4.text = '2 Layer Towers of Hanoi'
-    towerButton4.OnMouseLeftClick = lambda: getMod().start_tower(2)
-
-    towerButton5 = gui.create_button(guiMan, 'tower3', Pos2i(0,60), Pos2i(150,30), '')
-    towerButton5.text = '3 Layer Towers of Hanoi'
-    towerButton5.OnMouseLeftClick = lambda: getMod().start_tower(3)
+    towerButton3 = gui.create_button(guiMan, 'tower3', Pos2i(0,0), Pos2i(150,30), '')
+    towerButton3.text = '3 Layer Towers of Hanoi'
+    towerButton3.OnMouseLeftClick = lambda: getMod().start_tower(3)
 
     agentWindow = gui.create_window(guiMan, 'agentWindow', Pos2i(20, 20), Pos2i(150, 120), 'Agent')
     agentWindow.addChild(towerButton3)
-    agentWindow.addChild(towerButton4)
-    agentWindow.addChild(towerButton5)
 
     speedupValue = gui.create_text(guiMan, 'speedupEditBox', Pos2i(260, 30), Pos2i(100, 30), str(0))
 
@@ -85,9 +76,9 @@ def ClientMain():
     addObject("data/terrain/FlatTerrain.xml", Vector3f(-500,-500,0), Vector3f(0,0,0)) #Vector3f(-1100 + NUDGE_X, -2400 + NUDGE_Y, -17), Vector3f(0,0,-45))
     addSkyBox("data/sky/irrlicht2")
 
-    # load the maze
+    # load the environment
     getSimContext().addLightSource(Vector3f(-500,-500,1000), 1500)
-    getMod().add_maze()
+    getMod().set_environment(TowerEnvironment())
 
     # load the GUI
     CreateGui(getGuiManager())

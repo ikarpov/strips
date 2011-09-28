@@ -4,7 +4,8 @@ import BlocksPlanning
 import random
 from BlocksPlanning.environment import TowerEnvironment
 from BlocksPlanning.constants import *
-from BlocksPlanning.strips import *
+from strips2 import solve, print_plan
+from towers3 import *
 
 def get_action_index(move):
     if move in TowerEnvironment.MOVES:
@@ -37,13 +38,14 @@ class Cell:
 # action primitives
 # move without getting stuff
 MOVES = { \
-    ('Pole1', 'Pole2'): [4, 1, 5], \
-    ('Pole1', 'Pole3'): [4, 1, 1, 5], \
-    ('Pole2', 'Pole1'): [5, 1, 4], \
-    ('Pole2', 'Pole3'): [4, 1, 1, 5], \
-    ('Pole3', 'Pole1'): [5, 1, 1, 4], \
-    ('Pole3', 'Pole2'): [5, 1, 4] \
+    (Pole1, Pole2): [4, 1, 5], \
+    (Pole1, Pole3): [4, 1, 1, 5], \
+    (Pole2, Pole1): [5, 1, 4], \
+    (Pole2, Pole3): [4, 1, 1, 5], \
+    (Pole3, Pole1): [5, 1, 1, 4], \
+    (Pole3, Pole2): [5, 1, 4] \
 }
+
 # move with pick up and put down
 CARRY_MOVES = {}
 for (source, dest) in MOVES:
@@ -51,70 +53,47 @@ for (source, dest) in MOVES:
 
 class TowerAgent(AgentBrain):
     """
-    An agent that uses a planner to solve a STRIPS planning problem
+    An agent that uses a STRIPS-like planner to solve the Towers of Hanoi problem
     """
     def __init__(self):
         AgentBrain.__init__(self) # have to make this call
         self.action_queue = [5] # rotate left to reset state first
-    
+
     def initialize(self,init_info):
-        # Create new Agent
+        """
+        Create the agent.
+        init_info -- AgentInitInfo that describes the observation space (.sensors),
+                     the action space (.actions) and the reward space (.rewards)
+        """
         self.action_info = init_info.actions
         return True
 
-    def start(self, time, sensors):
+    def start(self, time, observations):
         """
         return first action given the first observations
         """
-        w = get_environment().world
-        locations = get_environment().locations
-        # Did someone start us at the goal?
-        already_solved = w.goal_reached()
-        if not already_solved:
-            print "Solving..."
-            solution = solve(w)
-            if solution is None:
-                print "No solution found :("
-            else:
-                print "Solved! Plan: {0}".format(" -> ".join([x.simple_str() for x in reversed(solution)]))
-                # convert the plan into agent actions
-                for action in reversed(solution):
-                    print action.simple_str()
-                    disk = action.literals[0]
-                    source = action.literals[1]
-                    dest = action.literals[2]
-                    print 'BEFORE:', disk, source, dest, 'disk at:', locations[disk], 'agent at:', locations['Agent']
-                    if locations[disk] != locations['Agent']:
-                        self.action_queue.extend(MOVES[(locations['Agent'], locations[disk])])
-                        locations['Agent'] = locations[disk]
-                    self.action_queue.extend(CARRY_MOVES[(locations[source], locations[dest])])
-                    locations[disk] = locations[dest]
-                    locations['Agent'] = locations[dest]
-                #from show_strips import show_solution
-                #show_solution(solution)
-        else:
-            print 'Already solved!'
-        if self.action_queue:
-            return self.action_queue.pop(0)
-        else:
-            return 0
+        def planner(viewer):
+            solve(INIT, GOAL, ACTIONS, viewer=viewer)
+        from strips2_show import demo_planner
+        plan = demo_planner(planner)
+        if plan is not None:
+            print_plan(plan)
+        return 0
 
-    def reset(self):
-        pass
-
-    def act(self, time, sensors, reward):
+    def act(self, time, observations, reward):
         """
-        return an action given the reward for the previous action and the new observations
+        return an action given the reward for the previous
+        action and the new observations
         """
-        if self.action_queue:
-            return self.action_queue.pop(0)
-        else:
-            return 0
+        return 0
 
     def end(self, time, reward):
         """
         receive the reward for the last observation
         """
+        return True
+
+    def reset(self):
         return True
 
     def destroy(self):

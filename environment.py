@@ -115,24 +115,9 @@ class TowerEnvironment(Environment):
         reward_info.add_continuous(-100,100)
         self.agent_info = AgentInitInfo(observation_info, action_info, reward_info)
         self.max_steps = MAX_STEPS
-        
+
     def set_num_towers(self, n):
         self.num_towers = n
-        from strips import create_world
-        if self.num_towers == 1:
-            self.world = create_world(findResource('worlds/towers1_strips.txt'))
-            self.locations = { 'Disk1': 'Pole1', 'Pole1': 'Pole1', \
-                'Pole2': 'Pole2', 'Pole3': 'Pole3', 'Agent': 'Pole1' }
-        elif self.num_towers == 2:
-            self.world = create_world(findResource('worlds/towers2_strips.txt'))
-            self.locations = { 'Disk1': 'Pole1', 'Disk2': 'Pole1', \
-                'Pole1': 'Pole1', 'Pole2': 'Pole2', 'Pole3': 'Pole3', \
-                'Agent': 'Pole1' }
-        else:
-            self.world = create_world(findResource('worlds/towers_strips.txt'))
-            self.locations = { 'Disk1': 'Pole1', 'Disk2': 'Pole1', \
-                'Disk3': 'Pole1', 'Pole1': 'Pole1', 'Pole2': 'Pole2', \
-                'Pole3': 'Pole3', 'Agent': 'Pole1' }
 
     def initialize_blocks(self):
         if self.num_towers >= 1:
@@ -150,7 +135,7 @@ class TowerEnvironment(Environment):
                 self.set_block('green',0,1,1,4)
         elif self.get_block_state('green'):
             self.remove_block('green')
-            
+
         gstate = self.get_block_state('green')
 
         if self.num_towers >= 3:
