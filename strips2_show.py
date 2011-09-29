@@ -1,5 +1,6 @@
 from Tkinter import *
 from towers3 import *
+from pprint import pprint
 import threading
 
 DH = 10
@@ -48,7 +49,14 @@ class StripsStateViewer:
     def quit(self):
         self.master.quit()
 
+    def show_wes_state(self, state, depth = 0, plan = []):
+        # convert the state
+        state = set([ tuple([c.name()] + list(c.literals)) for c in state ])
+        pprint(state)
+        self.show_state(state, depth, plan)
+
     def show_state(self, state, depth = 0, plan = []):
+        """ show the state evaluated at the depth and the specified plan"""
         if self.lock:
             self.lock.acquire()
         while depth > len(self.canvases) - 1:
@@ -76,11 +84,13 @@ class StripsStateViewer:
         mainloop()
 
 def show_state(state = INIT):
+    """ show the current state in a window """
     viewer = StripsStateViewer()
     viewer.show_state(state)
     mainloop()
 
 def demo_planner(planner):
+    """ demonstrate the planner with the "thought bubble" of the state stack """
     lock = threading.Lock()
     viewer = StripsStateViewer(lock)
     viewer.show_state(INIT)
@@ -89,6 +99,23 @@ def demo_planner(planner):
     mainloop()
     thread.join()
     return viewer.plan
+
+def get_height(state, disk):
+    """ get the height of the disk given the state """
+    for p in state:
+        if p[0] == 'On' and p[1] == disk:
+            return 1 + get_height(state - set([p]), p[2])
+    return 0
+
+def get_pole(state, disk):
+    """ get the pole of the disk given the state """
+    for p in state:
+        if p[0] == 'On' and p[1] == disk:
+            if p[2] in POLES:
+                return p[2]
+            else:
+                return get_pole(state - set([p]), p[2])
+    return None
 
 if __name__ == "__main__":
     show_state()

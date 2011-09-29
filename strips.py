@@ -90,11 +90,14 @@ class Condition:
                 args.append(p)
         return GroundedCondition(self.predicate, tuple(args), self.truth)
 
-    def __str__(self):
+    def name(self):
         name = self.predicate
         if not self.truth:
             name = "!" + name
-        return "{0}({1})".format(name, join_list(self.params))
+        return name
+
+    def __str__(self):
+        return "{0}({1})".format(self.name(), join_list(self.params))
 
 class GroundedCondition:
     def __init__(self, predicate, literals, truth=True):
@@ -105,11 +108,14 @@ class GroundedCondition:
     def reached(self, world):
         return world.is_true(self.predicate, self.literals) == self.truth
 
-    def __str__(self):
+    def name(self):
         name = self.predicate
         if not self.truth:
             name = "!" + name
-        return "{0}({1})".format(name, join_list(self.literals))
+        return name
+
+    def __str__(self):
+        return "{0}({1})".format(self.name(), join_list(self.literals))
 
 class Action:
     def __init__(self, name, params, preconditions, postconditions):
@@ -363,6 +369,7 @@ def linear_solver_helper(world, state, goals, current_plan):
         return None
 
     i = 0
+    global viewer
     while i < len(goals):
         goal = goals[i]
 
@@ -372,6 +379,8 @@ def linear_solver_helper(world, state, goals, current_plan):
             print padding + "Other Goals: {0}".format(", ".join([str(x) for x in goals[i+1:]]))
             print padding + "State: {0}".format(", ".join([str(s) for s in state]))
             raw_input("")
+        if viewer:
+            viewer.show_wes_state(state, len(plan), plan)
 
         if satisfied(state, goal):
             # recurse
@@ -855,24 +864,30 @@ def merge_goals(world, grounded_action, goals):
 def print_plan(plan):
     print "Plan: {0}".format(" -> ".join([x.simple_str() for x in plan]))
 
+viewer = None
 
 def main():
     w = create_world(None)
 
-    # Did someone start us at the goal?
-    already_solved = w.goal_reached()
-    print "Goal already solved? {0}".format(already_solved)
+    def planner(v):
+        global viewer
+        viewer = v
+        # Did someone start us at the goal?
+        already_solved = w.goal_reached()
+        print "Goal already solved? {0}".format(already_solved)
 
-    if not already_solved:
-        print "Solving..."
-        solution = linear_solver(w)
-        if solution is None:
-            print "No solution found :("
-        else:
-            print "Solved!"
-            print_plan(solution)
-            #from show_strips import show_solution
-            #show_solution(solution)
+        if not already_solved:
+            print "Solving..."
+            solution = linear_solver(w)
+            if solution is None:
+                print "No solution found :("
+            else:
+                print "Solved!"
+                print_plan(solution)
+
+    from strips2_show import demo_planner
+
+    demo_planner(planner)
 
 if __name__ == "__main__":
     main()

@@ -71,20 +71,3 @@ def UnMove(STATE, Disk, Source, Dest):
 # in general we could make things general and check for function arity
 # but currently the code only works with Disk, Source, Dest
 ACTIONS = [ (Move, UnMove) ]
-
-def get_height(state, disk):
-    """ get the height of the disk given the state """
-    for p in state:
-        if p[0] == 'On' and p[1] == disk:
-            return 1 + get_height(state - set([p]), p[2])
-    return 0
-
-def get_pole(state, disk):
-    """ get the pole of the disk given the state """
-    for p in state:
-        if p[0] == 'On' and p[1] == disk:
-            if p[2] in POLES:
-                return p[2]
-            else:
-                return get_pole(state - set([p]), p[2])
-    return None
