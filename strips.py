@@ -380,7 +380,7 @@ def linear_solver_helper(world, state, goals, current_plan):
                 print ""
             i += 1
             continue
-        
+
         possible_actions = sorted(get_possible_grounds(world, goal), key=lambda c: initial_state_distance(state, c.pre))
 
         # otherwise, we need to find a subgoal that will get us to the goal
@@ -405,14 +405,14 @@ def linear_solver_helper(world, state, goals, current_plan):
                     print padding + "Some preconditions not reachable by any possible action. Skipping..."
                     raw_input("")
                 continue
-            
+
             # check if the action directly contradicts another goal
             if contains_contradiction(goals, action):
                 if debug:
                     print padding + "Action violates another goal state. Skipping..."
                     raw_input("")
                 continue
-            
+
             # if we can't obviously reject it as unreachable, we have to recursively descend.
             if debug:
                 print padding + "Action cannot be trivially rejected as unreachable. Descending..."
@@ -426,7 +426,7 @@ def linear_solver_helper(world, state, goals, current_plan):
 
             solution = linear_solver_helper(world, temp_state, subgoals, current_plan)
 
-            # we were unable to find 
+            # we were unable to find
             if solution is None:
                 if debug:
                     print padding + "No solution found with this action. Skipping..."
@@ -437,11 +437,11 @@ def linear_solver_helper(world, state, goals, current_plan):
                 print padding + "Possible solution found!"
                 raw_input("")
 
-            
+
             # update the state to incorporate the post conditions of our selected action
             for post in action.post:
                 update_state(temp_state, post)
-            
+
             """We need to check if the state deleted any of the previous goals. Three options how to handle this:
             1) Give up
             2) Protect it from happening by backtracking all the way (requires fine-grained tracking of states)
@@ -456,10 +456,10 @@ def linear_solver_helper(world, state, goals, current_plan):
                 [goals.remove(x) for x in clobbered]
                 [goals.append(x) for x in clobbered]
                 i -= len(clobbered)
-                if debug:    
+                if debug:
                     print padding + "New goals: {0}".format(", ".join([str(x) for x in goals]))
                     raw_input("")
-            
+
 
             # add the subplan to the plan
             plan.extend(solution)
@@ -471,7 +471,7 @@ def linear_solver_helper(world, state, goals, current_plan):
 
             # add this action to the plan
             plan.append(action)
-            
+
             if debug:
                 print padding + "New State: " + ", ".join([str(x) for x in state])
                 raw_input("")
@@ -536,7 +536,7 @@ def goal_stack_helper(world, state, goals, plan):
         print padding + "Other Goals: {0}".format(", ".join([str(x) for x in goals]))
         print padding + "State: {0}".format(", ".join([str(s) for s in state]))
         raw_input("")
-    
+
     # if its preconditions are satisfied by the state of the world
     if satisfied(state, goal):
         # recurse
@@ -610,7 +610,7 @@ def goal_stack_helper(world, state, goals, plan):
         if solution_found:
             if debug:
                 print padding + "Possible solution found!"
-            
+
             # update the state with the postconditions of the action
             for post in action.post:
                 update_state(temp_state, post)
@@ -622,13 +622,13 @@ def goal_stack_helper(world, state, goals, plan):
             # accept the copy state as the new state
             del state[:]
             state.extend(temp_state)
-            
+
 
             if debug:
                 print padding + "New State: " + ", ".join([str(x) for x in state])
                 print padding + "New Goals: " + ", ".join([str(x) for x in goals])
                 raw_input("")
-            
+
             # return the new plan
             return plan
         else:
@@ -657,11 +657,11 @@ def initial_state_distance(state, preconds):
 
 def satisfied(state, goal):
     condition = weak_find(state, goal)
-    
+
     # we only keep track of positive literals (closed world assumption), so if it's here, it's true
     if goal.truth == True:
         return condition != None
-    
+
     # if it's not here, we assume it's false
     return condition == None
 
@@ -760,7 +760,7 @@ def solve_helper(world, subgoals, preconds, plan, max_depth):
 
             # add the candidate to the list of possibilities
             plan.append(candidate)
-            
+
             if debug:
                 print padding + str(candidate).replace("\n", "\n" + padding)
                 print padding + "Subgoals: {0}".format(", ".join([str(x) for x in candgoals]))
@@ -775,9 +775,9 @@ def solve_helper(world, subgoals, preconds, plan, max_depth):
 
             # if the candidate did not work, remove it and try the next guy
             plan.pop()
-        
 
-   
+
+
 
 # Gets all grounded actions which have a post condition that includes the goal
 def get_possible_grounds(world, goal):
