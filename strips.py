@@ -365,8 +365,8 @@ def linear_solver_helper(world, state, goals, current_plan):
     if len(goals) == 0:
         return plan
 
-    if len(current_plan) > 10:
-        return None
+    #if len(current_plan) > 10:
+    #    return None
 
     i = 0
     global viewer
