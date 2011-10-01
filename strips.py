@@ -365,7 +365,7 @@ def linear_solver_helper(world, state, goals, current_plan):
     if len(goals) == 0:
         return plan
 
-    #if len(current_plan) > 10:
+    #if len(current_plan) > 18:
     #    return None
 
     i = 0
@@ -457,6 +457,9 @@ def linear_solver_helper(world, state, goals, current_plan):
             3) Re-introduce any goal which was deleted
             We choose #3 here, because it actually solves the problem eventually"""
             clobbered = [x for x in goals if x != goal and not satisfied(temp_state, x)]
+            #clobbered = [x for x in goals[0:i] if x != goal and not satisfied(temp_state, x)]
+            #clob_len = len(clobbered)
+            #clobbered.extend([x for x in goals[i+1:] if x != goal and not satisfied(temp_state, x)])
             if len(clobbered) > 0:
                 if debug:
                     print padding + "Path satisfies {0} but clobbers other goals: {1}".format(goal, ", ".join([str(x) for x in clobbered]))
@@ -464,6 +467,7 @@ def linear_solver_helper(world, state, goals, current_plan):
                     raw_input("")
                 [goals.remove(x) for x in clobbered]
                 [goals.append(x) for x in clobbered]
+                #i -= clob_len
                 i -= len(clobbered)
                 if debug:
                     print padding + "New goals: {0}".format(", ".join([str(x) for x in goals]))
